@@ -33,6 +33,10 @@ df['processed_text'] = df['text'].apply(preprocess_text)
 model = Word2Vec(sentences=df['processed_text'], vector_size=300, window=10, min_count=2, workers=4, sg=1)
 # 假设已知的维度词
 dimensions = ['quality', 'service']
+# dimensions = {
+#     'food_quality': ['taste', 'flavor', 'fresh'],
+#     'service': ['service', 'staff', 'waiter']
+# }
 
 # 提取维度词
 dimension_words = {dim: model.wv.most_similar(dim, topn=10) for dim in dimensions}
