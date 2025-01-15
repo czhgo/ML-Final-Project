@@ -16,5 +16,5 @@ if __name__=='__main__':
     print(df2.shape)
     df['anyvote']=df['helpful_vote']>0
     df['anyvote']=df['anyvote'].astype(int)
-    df.to_csv('Review_train.csv',index = False)
-    df2.to_csv('review_with_help.csv',index=False)
+    df.to_csv('Review_train.csv')
+    df2.to_csv('review_with_help.csv')

@@ -71,4 +71,4 @@ df['sentiment'] = df['processed_text'].apply(analyze_sentiment)
 # 应用统计函数
 df['dimension_stats'] = df['processed_text'].apply(lambda x: calculate_dimension_stats(x, dimension_words))
 print(df[['text', 'dimension_stats']].head())
-df.to_csv('Review_train.csv',index=False)
+df.to_csv('Review_train.csv')
