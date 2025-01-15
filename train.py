@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import nltk
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
@@ -10,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
+
 # 下载停用词
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -43,28 +45,32 @@ def context_analysis(df):
     # Assign topic distribution
     df['topic_distribution'] = lda.transform(review_matrix).tolist()
     return df
-def demo_context_forest(df):
-    train_df =context_analysis(df)
-    X = np.concatenate([np.array(df['topic_distribution'].tolist()),
+def demo_context_forest(df1,df2):
+    train_df =context_analysis(df1)
+    test_df = context_analysis(df2)
+    X_train = np.concatenate([np.array(train_df['topic_distribution'].tolist()),
                         train_df[['word_count', 'avg_word_length', 'vocabulary_size','review_time','rating',]].to_numpy()], axis=1)
-    y = train_df['log_helpful_vote']    # 划分数据集
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    y_train = train_df['log_helpful_vote']    # 划分数据集
+    X_test = np.concatenate([np.array(test_df['topic_distribution'].tolist()),
+                        test_df[['word_count', 'avg_word_length', 'vocabulary_size','review_time','rating',]].to_numpy()], axis=1)
 
     # 训练模型
+
     model = GradientBoostingRegressor(n_estimators=30,verbose=1)
     model.fit(X_train, y_train)
-    model.save()
+
     # 预测
     y_pred = model.predict(X_test)
-
+    df2['log_useful_vote'] = y_pred
+    df2.to_csv('result.csv')
     # 评估模型
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    print(f'Mean Squared Error: {mse}')
-    print(f'R^2 Score: {r2}')
+
 if __name__ == '__main__':
-    df = pd.read_csv('Review_train.csv')
-    df['review_time'] = pd.to_datetime(df['review_time'])
-    df['review_time'] = df['review_time'].astype('int64')
-    demo_context_forest(df)
+    df1 = pd.read_csv('Review_train.csv')
+    df1['review_time'] = pd.to_datetime(df1['review_time'])
+    df1['review_time'] = df1['review_time'].astype('int64')
+    df2 = pd.read_csv('Review_test.csv')
+    df2['review_time'] = pd.to_datetime(df2['review_time'])
+    df2['review_time'] = df2['review_time'].astype('int64')
+    demo_context_forest(df1,df2)
 
